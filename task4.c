@@ -15,7 +15,7 @@ int main() {
     exit(-1);
   } else if (child_pid == 0) {
     printf("Child process with PID=%d, PPID=%d.\n", pid, ppid);
-    // Starting printer.out execution with cmd params.
+    // Starting echo execution with params "Hello" and "World".
     const char *prog = "echo";
     execlp(prog, prog, "Hello", "World", NULL);
     // This program will continue execution only if execlp failed.
