@@ -18,7 +18,7 @@ int main()
     exit(-1);
   }
   // Getting size of the file.
-  struct stat st;c
+  struct stat st;
   stat(pathname, &st);
   int size = st.st_size;
 
