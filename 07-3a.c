@@ -35,9 +35,18 @@ int create_sem() {
     printf("Can\'t generate key\n");
     exit(-1);
   }
-  if ((semid = semget(key, 1, 0666 | IPC_CREAT)) < 0) {
-    printf("Can\'t create semaphore set\n");
-    exit(-1);
+
+  if ((semid = semget(key, 1, 0666|IPC_CREAT|IPC_EXCL)) < 0) {
+    if (errno != EEXIST) {
+      printf("Can\'t create semaphore set\n");
+      exit(-1);
+    } else if ((semid = semget(key, 1, 0)) < 0) {
+      printf("Can\'t find semaphore\n");
+      exit(-1);
+    }
+  } else {
+    // Increase value of new semaphore. 
+    V(semid);
   }
   return semid;
 }
@@ -76,27 +85,21 @@ int main()
 
   // Create or get semaphore.
   sem_id = create_sem();
-  if(new){
-    // Increasing semaphore value by 1.
-    V(sem_id);
-  }
 
+  P(sem_id);
   if (new) {
-    P(sem_id);
     array[0] =  1;
     array[1] =  0;
     array[2] =  1;
-    V(sem_id);
   } else {
-    P(sem_id);
     array[0] += 1;
     array[2] += 1;
-    V(sem_id);
   }
 
   printf
     ("Program 1 was spawn %d times, program 2 - %d times, total - %d times\n",
     array[0], array[1], array[2]);
+  V(sem_id);
 
   if (shmdt(array) < 0) {
     printf("Can't detach shared memory\n");
